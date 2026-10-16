@@ -2,16 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { Loader } from './Loader';
 import { NewCommentForm } from './NewCommentForm';
 
-import * as commentsApi from '../api/comments';
+//import * as commentsApi from '../api/comments';
+//import { Comment, CommentData } from '../types/Comment';
 
 import { Post } from '../types/Post';
-import { Comment, CommentData } from '../types/Comment';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import {
+  addComment,
+  deleteComment,
+  fetchComments,
+  selectComments,
+  selectCommentsStatus,
+} from '../features/comments/commentsSlice';
+import { CommentData } from '../types/Comment';
 
 type Props = {
   post: Post;
 };
 
 export const PostDetails: React.FC<Props> = ({ post }) => {
+  /*
   const [comments, setComments] = useState<Comment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [hasError, setError] = useState(false);
@@ -55,7 +65,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
 
   useEffect(loadComments, [post.id]); // Wrong!
   // effect can return only a function but not a Promise
-  */
+  
 
   const addComment = async ({ name, email, body }: CommentData) => {
     try {
@@ -88,6 +98,24 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
 
     await commentsApi.deleteComment(commentId);
   };
+  */
+  const dispatch = useAppDispatch();
+  const comments = useAppSelector(selectComments);
+  const status = useAppSelector(selectCommentsStatus);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setVisible(false);
+    dispatch(fetchComments(post.id));
+  }, [post.id, dispatch]);
+
+  const handleAddComment = async ({ name, email, body }: CommentData) => {
+    await dispatch(addComment({ name, email, body, postId: post.id }));
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    dispatch(deleteComment(commentId));
+  };
 
   return (
     <div className="content" data-cy="PostDetails">
@@ -98,21 +126,21 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
       </div>
 
       <div className="block">
-        {!loaded && <Loader />}
+        {status === 'loading' && <Loader />}
 
-        {loaded && hasError && (
+        {status === 'failed' && (
           <div className="notification is-danger" data-cy="CommentsError">
             Something went wrong
           </div>
         )}
 
-        {loaded && !hasError && comments.length === 0 && (
+        {status === 'idle' && comments.length === 0 && (
           <p className="title is-4" data-cy="NoCommentsMessage">
             No comments yet
           </p>
         )}
 
-        {loaded && !hasError && comments.length > 0 && (
+        {status === 'idle' && comments.length > 0 && (
           <>
             <p className="title is-4">Comments:</p>
 
@@ -132,7 +160,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
                     type="button"
                     className="delete is-small"
                     aria-label="delete"
-                    onClick={() => deleteComment(comment.id)}
+                    onClick={() => handleDeleteComment(comment.id)}
                   >
                     delete button
                   </button>
@@ -146,7 +174,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </>
         )}
 
-        {loaded && !hasError && !visible && (
+        {status === 'idle' && !visible && (
           <button
             data-cy="WriteCommentButton"
             type="button"
@@ -157,8 +185,8 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </button>
         )}
 
-        {loaded && !hasError && visible && (
-          <NewCommentForm onSubmit={addComment} />
+        {status === 'idle' && visible && (
+          <NewCommentForm onSubmit={handleAddComment} />
         )}
       </div>
     </div>
