@@ -83,9 +83,7 @@ export const App: React.FC = () => {
 
               <div className="block" data-cy="MainContent">
                 {!author && <p data-cy="NoSelectedUser">No user selected</p>}
-
                 {author && !postsLoaded && <Loader />}
-
                 {author && postsLoaded && postsHasError && (
                   <div
                     className="notification is-danger"
@@ -94,10 +92,10 @@ export const App: React.FC = () => {
                     Something went wrong!
                   </div>
                 )}
-
+                {/* eslint-disable @typescript-eslint/indent */}
                 {author &&
                   postsLoaded &&
-                  postsHasError &&
+                  !postsHasError &&
                   posts.length === 0 && (
                     <div
                       className="notification is-warning"
@@ -117,6 +115,7 @@ export const App: React.FC = () => {
                       onPostSelected={post => dispatch(setSelectedPost(post))}
                     />
                   )}
+                {/* eslint-enable @typescript-eslint/indent */}
               </div>
             </div>
           </div>
