@@ -7,12 +7,14 @@ import { Post } from '../../types/Post';
 
 export interface PostsState {
   items: Post[];
-  status: 'idle' | 'loading' | 'failed';
+  loaded: boolean;
+  hasError: boolean;
 }
 
 const initialState: PostsState = {
   items: [],
-  status: 'idle',
+  loaded: false,
+  hasError: false,
 };
 
 export const fetchUserPosts = createAsyncThunk(
@@ -30,20 +32,23 @@ export const postsSlice = createSlice({
   reducers: {
     clearPosts: state => {
       state.items = [];
-      state.status = 'idle';
+      state.loaded = false;
+      state.hasError = false;
     },
   },
   extraReducers: builder => {
     builder
       .addCase(fetchUserPosts.pending, state => {
-        state.status = 'loading';
+        state.loaded = false;
+        state.hasError = false;
       })
       .addCase(fetchUserPosts.fulfilled, (state, action) => {
-        state.status = 'idle';
+        state.loaded = true;
         state.items = action.payload;
       })
       .addCase(fetchUserPosts.rejected, state => {
-        state.status = 'failed';
+        state.loaded = true;
+        state.hasError = true;
       });
   },
 });
@@ -51,6 +56,7 @@ export const postsSlice = createSlice({
 export const { clearPosts } = postsSlice.actions;
 
 export const selectPosts = (state: RootState) => state.posts.items;
-export const selectPostsStatus = (state: RootState) => state.posts.status;
+export const selectPostsLoaded = (state: RootState) => state.posts.loaded;
+export const selectPostsHasError = (state: RootState) => state.posts.hasError;
 
 export default postsSlice.reducer;

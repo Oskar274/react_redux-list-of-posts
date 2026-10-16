@@ -20,7 +20,8 @@ import {
   clearPosts,
   fetchUserPosts,
   selectPosts,
-  selectPostsStatus,
+  selectPostsHasError,
+  selectPostsLoaded,
 } from './features/posts/postsSlice';
 import {
   selectSelectedPost,
@@ -35,7 +36,8 @@ export const App: React.FC = () => {
   //const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const posts = useAppSelector(selectPosts);
-  const postsStatus = useAppSelector(selectPostsStatus);
+  const postsLoaded = useAppSelector(selectPostsLoaded);
+  const postsHasError = useAppSelector(selectPostsHasError);
 
   const author = useAppSelector(selectAuthor);
   const selectedPost = useAppSelector(selectSelectedPost);
@@ -82,9 +84,9 @@ export const App: React.FC = () => {
               <div className="block" data-cy="MainContent">
                 {!author && <p data-cy="NoSelectedUser">No user selected</p>}
 
-                {author && postsStatus === 'loading' && <Loader />}
+                {author && !postsLoaded && <Loader />}
 
-                {author && postsStatus === 'failed' && (
+                {author && postsLoaded && postsHasError && (
                   <div
                     className="notification is-danger"
                     data-cy="PostsLoadingError"
@@ -93,19 +95,28 @@ export const App: React.FC = () => {
                   </div>
                 )}
 
-                {author && postsStatus === 'idle' && posts.length === 0 && (
-                  <div className="notification is-warning" data-cy="NoPostsYet">
-                    No posts yet
-                  </div>
-                )}
+                {author &&
+                  postsLoaded &&
+                  postsHasError &&
+                  posts.length === 0 && (
+                    <div
+                      className="notification is-warning"
+                      data-cy="NoPostsYet"
+                    >
+                      No posts yet
+                    </div>
+                  )}
 
-                {author && postsStatus === 'idle' && posts.length > 0 && (
-                  <PostsList
-                    posts={posts}
-                    selectedPostId={selectedPost?.id}
-                    onPostSelected={post => dispatch(setSelectedPost(post))}
-                  />
-                )}
+                {author &&
+                  postsLoaded &&
+                  !postsHasError &&
+                  posts.length > 0 && (
+                    <PostsList
+                      posts={posts}
+                      selectedPostId={selectedPost?.id}
+                      onPostSelected={post => dispatch(setSelectedPost(post))}
+                    />
+                  )}
               </div>
             </div>
           </div>

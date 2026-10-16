@@ -7,12 +7,14 @@ import { Comment } from '../../types/Comment';
 
 export interface CommentsState {
   items: Comment[];
-  status: 'idle' | 'loading' | 'failed';
+  loaded: boolean;
+  hasError: boolean;
 }
 
 const initialState: CommentsState = {
   items: [],
-  status: 'idle',
+  loaded: false,
+  hasError: false,
 };
 
 export const fetchComments = createAsyncThunk(
@@ -49,17 +51,22 @@ export const commentsSlice = createSlice({
   extraReducers: builder => {
     builder
       .addCase(fetchComments.pending, state => {
-        state.status = 'loading';
+        state.loaded = false;
+        state.hasError = false;
       })
       .addCase(fetchComments.fulfilled, (state, action) => {
-        state.status = 'idle';
+        state.loaded = true;
         state.items = action.payload;
       })
       .addCase(fetchComments.rejected, state => {
-        state.status = 'failed';
+        state.loaded = true;
+        state.hasError = true;
       })
       .addCase(addComment.fulfilled, (state, action) => {
         state.items.push(action.payload);
+      })
+      .addCase(addComment.rejected, state => {
+        state.hasError = true;
       })
       .addCase(deleteComment.pending, (state, action) => {
         state.items = state.items.filter(
@@ -70,6 +77,8 @@ export const commentsSlice = createSlice({
 });
 
 export const selectComments = (state: RootState) => state.comments.items;
-export const selectCommentsStatus = (state: RootState) => state.comments.status;
+export const selectCommentsLoaded = (state: RootState) => state.comments.loaded;
+export const selectCommentsHasError = (state: RootState) =>
+  state.comments.hasError;
 
 export default commentsSlice.reducer;

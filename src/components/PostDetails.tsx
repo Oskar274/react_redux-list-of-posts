@@ -12,7 +12,8 @@ import {
   deleteComment,
   fetchComments,
   selectComments,
-  selectCommentsStatus,
+  selectCommentsHasError,
+  selectCommentsLoaded,
 } from '../features/comments/commentsSlice';
 import { CommentData } from '../types/Comment';
 
@@ -101,7 +102,8 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   */
   const dispatch = useAppDispatch();
   const comments = useAppSelector(selectComments);
-  const status = useAppSelector(selectCommentsStatus);
+  const loaded = useAppSelector(selectCommentsLoaded);
+  const hasError = useAppSelector(selectCommentsHasError);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -126,21 +128,21 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
       </div>
 
       <div className="block">
-        {status === 'loading' && <Loader />}
+        {loaded && <Loader />}
 
-        {status === 'failed' && (
+        {hasError && (
           <div className="notification is-danger" data-cy="CommentsError">
             Something went wrong
           </div>
         )}
 
-        {status === 'idle' && comments.length === 0 && (
+        {loaded && comments.length === 0 && (
           <p className="title is-4" data-cy="NoCommentsMessage">
             No comments yet
           </p>
         )}
 
-        {status === 'idle' && comments.length > 0 && (
+        {loaded && comments.length > 0 && (
           <>
             <p className="title is-4">Comments:</p>
 
@@ -174,7 +176,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </>
         )}
 
-        {status === 'idle' && !visible && (
+        {loaded && !visible && (
           <button
             data-cy="WriteCommentButton"
             type="button"
@@ -185,9 +187,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </button>
         )}
 
-        {status === 'idle' && visible && (
-          <NewCommentForm onSubmit={handleAddComment} />
-        )}
+        {loaded && visible && <NewCommentForm onSubmit={handleAddComment} />}
       </div>
     </div>
   );
