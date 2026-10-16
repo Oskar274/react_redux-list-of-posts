@@ -128,21 +128,21 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
       </div>
 
       <div className="block">
-        {loaded && <Loader />}
+        {!loaded && <Loader />}
 
-        {hasError && (
+        {loaded && hasError && (
           <div className="notification is-danger" data-cy="CommentsError">
             Something went wrong
           </div>
         )}
 
-        {loaded && comments.length === 0 && (
+        {loaded && !hasError && comments.length === 0 && (
           <p className="title is-4" data-cy="NoCommentsMessage">
             No comments yet
           </p>
         )}
 
-        {loaded && comments.length > 0 && (
+        {loaded && !hasError && comments.length > 0 && (
           <>
             <p className="title is-4">Comments:</p>
 
@@ -176,7 +176,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </>
         )}
 
-        {loaded && !visible && (
+        {loaded && !hasError && !visible && (
           <button
             data-cy="WriteCommentButton"
             type="button"
@@ -187,7 +187,9 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </button>
         )}
 
-        {loaded && visible && <NewCommentForm onSubmit={handleAddComment} />}
+        {loaded && !hasError && visible && (
+          <NewCommentForm onSubmit={handleAddComment} />
+        )}
       </div>
     </div>
   );
